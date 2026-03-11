@@ -1,0 +1,91 @@
+
+# .NET
+
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.userprefs
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+
+# Конфиги с секретами — никогда не пушим
+
+appsettings.Development.json
+appsettings.Local.json
+**/appsettings.Development.json
+**/appsettings.Local.json
+
+
+# Docker
+
+.docker/
+
+
+# IDE
+
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Rider
+.idea/
+*.sln.iml
+
+# Visual Studio
+.vs/
+*.VC.db
+*.VC.VC.opendb
+
+
+# OS
+
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Логи
+*.log
+logs/
+**/logs/
+
+
+# Keycloak realm export с секретами
+
+# если в realm-export.json есть секреты клиентов
+# infrastructure/keycloak/realm-export.json
+
+
+# Frontend
+node_modules/
+dist/
+.env
+.env.local
+.env.development.local
+.env.production.local
