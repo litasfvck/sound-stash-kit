@@ -1,0 +1,131 @@
+services:
+  
+  # PostgreSQL
+  
+  postgres:
+    image: postgres:16
+    container_name: sound-stash-kit-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: keycloak_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sound-stash-kit-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
+  
+  # Redis
+  
+  redis:
+    image: redis:7-alpine
+    container_name: sound-stash-kit-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - sound-stash-kit-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  
+  # RabbitMQ
+  
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: sound-stash-kit-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: rabbit
+    ports:
+      - "5672:5672"    # AMQP протокол (для сервисов)
+      - "15672:15672"  # Management UI → http://localhost:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - sound-stash-kit-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  
+  # MinIO (S3-compatible хранилище для аудиофайлов)
+  
+  minio:
+    image: minio/minio:latest
+    container_name: sound-stash-kit-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"   # S3 API (для сервисов)
+      - "9001:9001"   # Console UI → http://localhost:9001
+    volumes:
+      - minio_data:/data
+    networks:
+      - sound-stash-kit-network
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+ 
+  # Keycloak (Identity Provider)
+ 
+  keycloak:
+    image: keycloak/keycloak:25.0.1
+    container_name: sound-stash-kit-keycloak
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+    command: start-dev --import-realm
+    ports:
+      - "8080:8080"   # Keycloak UI → http://localhost:8080
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    networks:
+      - sound-stash-kit-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+
+# Volumes
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  minio_data:
+
+
+# Networks
+
+networks:
+  sound-stash-kit-network:
+    driver: bridge
