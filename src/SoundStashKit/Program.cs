@@ -30,6 +30,6 @@ if (app.Environment.IsDevelopment())
 
 // Эндпоинты
 app.MapSampleEndpoints();
-// app.MapPackEndpoints();
+app.MapPackEndpoints();
 
 app.Run();
