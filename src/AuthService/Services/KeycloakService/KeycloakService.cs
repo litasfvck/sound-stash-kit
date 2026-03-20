@@ -159,15 +159,23 @@ public class KeycloakService(
     {
         var formData = new Dictionary<string, string>
         {
-            ["grant_type"] = "client_credentials",
-            ["client_id"] = _settings.ClientId,
-            ["client_secret"] = _settings.ClientSecret
+            ["grant_type"] = "password",
+            ["client_id"] = "admin-cli",
+            ["username"] = _settings.AdminUsername,
+            ["password"] = _settings.AdminPassword
         };
+
+        var adminTokenUrl = $"{_settings.BaseUrl}/realms/master/protocol/openid-connect/token";
 
         try
         {
-            var token = await RequestTokenAsync(_settings.TokenUrl, formData);
-            return token.AccessToken;
+            var response = await _httpClient.PostAsync(
+            adminTokenUrl, 
+            new FormUrlEncodedContent(formData));
+            
+            var content = await response.Content.ReadAsStringAsync();
+            var token = JsonSerializer.Deserialize<KeycloakTokenResponse>(content);
+            return token?.AccessToken;
         }
         catch (Exception ex)
         {
