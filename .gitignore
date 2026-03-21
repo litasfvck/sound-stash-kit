@@ -77,9 +77,7 @@ logs/
 
 
 # Keycloak realm export с секретами
-
-# если в realm-export.json есть секреты клиентов
-# infrastructure/keycloak/realm-export.json
+infrastructure/keycloak/realm-export.json
 
 
 # Frontend
