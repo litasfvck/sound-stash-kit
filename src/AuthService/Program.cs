@@ -20,8 +20,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference(options =>
     {
+        options.BaseServerUrl = "/";
         options.Theme = ScalarTheme.BluePlanet;
     });
+
+    app.MapGet("/", () => Results.Redirect("/scalar")).ExcludeFromDescription();
 }
 
 // Эндпоинты
