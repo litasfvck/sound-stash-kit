@@ -5,6 +5,7 @@ using SoundStashKit.Services.PackService;
 using SoundStashKit.Services.FakeUserService;
 using SoundStashKit.Services.SampleService;
 using SoundStashKit.Endpoints;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,16 @@ builder.Services.AddScoped<IFakeUser, FakeUser>();
 builder.Services.AddScoped<ISampleService,SampleService>();
 builder.Services.AddScoped<IPackService, PackService>();
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "http://localhost:8080/realms/sound-stash";
+        options.Audience = "account";
+        options.RequireHttpsMetadata = false;
+    });
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -27,6 +38,9 @@ if (app.Environment.IsDevelopment())
         options.Theme = ScalarTheme.BluePlanet;
     });
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Эндпоинты
 app.MapSampleEndpoints();
